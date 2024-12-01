@@ -1,0 +1,24 @@
+nmbOfDevices: 2  # Number of devices
+delay: 1         # Delay in seconds
+maxMessages: 20 # Maximum number of messages
+
+geosection:
+  type: square   # Geosection type: 'square', 'round', or 'none'
+  center:
+    lat: 0.0       # Latitude of the center (only for 'round' type)
+    lon: 0.0       # Longitude of the center (only for 'round' type)
+  bounds:
+    radius: 1      # Radius, km (only for 'round' type)
+    lat_range: [-90.0, 90.0]  # Latitude range (only for 'square' type)
+    lon_range: [-180.0, 180.0]  # Longitude range (only for 'square' type)
+
+azureEventHub:
+  connectionString: "" # "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
+
+values:
+  - name: "Temperature"
+    min: 0
+    max: 10
+  - name: "Size"
+    min: 5
+    max: 15
