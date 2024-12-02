@@ -81,6 +81,16 @@ values:
 - **Missing `settings.yml` file**: Ensure the `settings.yml` file exists in the root of your workspace.
 - **Missing Azure Event Hub connection string**: If the connection string is not defined in the `settings.yml` file, set the `AZURE_EVENTHUB_CONNECTION_STRING` environment variable.
 
+## Known Limitations
+
+### Port 5671 Connectivity
+This application uses Azure Event Hubs, which relies on **AMQP** protocol over **port 5671** for communication. If the application fails to connect to the Event Hub, it could be due to network restrictions blocking this port.
+
+#### How to Test
+1. Open a terminal and run the following command to check if port 5671 is accessible:
+   ```bash
+   telnet <namespace>.servicebus.windows.net 5671
+
 ## Contributing
 
 1. Fork the repository.

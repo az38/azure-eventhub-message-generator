@@ -109,12 +109,12 @@ export async function activate(context: vscode.ExtensionContext) {
                     totalMessagesSent++;
 
                     // Log the sent message
-                    console.log(`Sent message for device ${device} (Total: ${totalMessagesSent} of ${settings.maxMessages})`);
+                    console.log(`Sent message for device ${device} (Total: ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices})`);
 
                     // Update the progress
                     progress.report({
                         increment: Math.floor((totalMessagesSent / settings.maxMessages) * 100),
-                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages}`,
+                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices}`,
                     });
 
                     // Delay between messages

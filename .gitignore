@@ -23,5 +23,8 @@ coverage/
 # Environment variables
 .env
 
+#package
+*.vsix
+
 # Azure Event Hub connection string (if stored locally, avoid committing sensitive data)
 azureEventHub.connectionString
