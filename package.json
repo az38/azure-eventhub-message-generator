@@ -2,7 +2,7 @@
   "name": "azure-eventhub-message-generator",
   "displayName": "Azure Event Hub Message Generator",
   "description": "A VS Code extension to generate random messages and send them to Azure Event Hub.",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "icon": "icon.png",
   "repository": {
     "type": "git",
@@ -17,6 +17,9 @@
   ],
   "main": "./out/extension.js",
   "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepare": "npm run build",
     "vscode:prepublish": "npm run package",
     "package": "webpack --mode production",
     "lint": "eslint . --ext ts"

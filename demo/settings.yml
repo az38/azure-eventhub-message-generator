@@ -1,6 +1,6 @@
 nmbOfDevices: 2  # Number of devices
 delay: 1         # Delay in seconds
-maxMessages: 100 # Maximum number of messages
+maxMessages: 16 # Maximum number of messages
 
 geosection:
   type: square   # Geosection type: 'square', 'round', or 'none'
@@ -19,6 +19,8 @@ values:
   - name: "Temperature"
     min: 0
     max: 90
+    type: "int"
   - name: "Size"
     min: 5
     max: 15
+    type: "float"

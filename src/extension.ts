@@ -18,7 +18,7 @@ interface Settings {
         };
     };
     azureEventHub: { connectionString: string };
-    values: { name: string; min: number; max: number }[];
+    values: { name: string; min: number; max: number; type?: 'int' | 'float' }[];
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -93,11 +93,14 @@ export async function activate(context: vscode.ExtensionContext) {
                             message.lat = latMin + Math.random() * (latMax - latMin);
                             message.lon = lonMin + Math.random() * (lonMax - lonMin);
                         }
+
+                        message.lat = parseFloat((message.lat).toFixed(5))
+                        message.lon = parseFloat((message.lon).toFixed(5))
                     }
 
                     // Add value parameters
                     settings.values.forEach((param) => {
-                        message[param.name] = param.min + Math.random() * (param.max - param.min);
+                        message[param.name] = generateRandomValue(param.min, param.max, param.type || 'float');
                     });
 
                     // Send message
@@ -145,3 +148,10 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+// Helper function to generate a random value based on type
+function generateRandomValue(min: number, max: number, type: 'int' | 'float' = 'float') {
+    const value = min + Math.random() * (max - min);
+    return type === 'int' ? Math.floor(value) : parseFloat(value.toFixed(5));
+}
+

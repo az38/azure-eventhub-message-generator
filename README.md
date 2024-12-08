@@ -11,6 +11,7 @@ This VS Code extension allows you to generate and send random messages to an Azu
 - **Azure Event Hub Integration**: Send the generated messages to Azure Event Hub.
 - **Progress Reporting**: Visual progress is displayed in VS Code during message sending, with a notification when completed.
 - **Environment Variable Support**: If the connection string is not defined in the `settings.yml` file, the extension will use the `AZURE_EVENTHUB_CONNECTION_STRING` environment variable.
+- **Precision Handling**: All float values, including geocoordinates, are explicitly rounded to 5 decimal places for consistency.
 
 ## Installation
 
@@ -47,9 +48,11 @@ values:
   - name: "Temperature"
     min: 0
     max: 10
+    type: "float" # Use "int" for integer values or "float" for decimal values (default: "float")
   - name: "Size"
     min: 5
     max: 15
+    type: "int"
 ```
 
 ### Parameters Explained:
@@ -61,7 +64,10 @@ values:
   - **`center`**: Latitude and longitude of the center for round geosections.
   - **`bounds`**: Bounds of the geosection, which can include radius (for `round`) or lat/lon ranges (for `square`).
 - **`azureEventHub.connectionString`**: Azure Event Hub connection string (or set the environment variable `AZURE_EVENTHUB_CONNECTION_STRING` if not defined in the YAML).
-- **`values`**: List of parameters to be included in each message (e.g., `Temperature`, `Size`), with a min and max value.
+- **`values`**: List of parameters to be included in each message (e.g., `Temperature`, `Size`), with:
+  - `name`: Parameter name.
+  - `min` and `max`: Range of random values.
+  - `type`: Specifies `int` or `float` (default: `float`). All float values are explicitly rounded to 5 decimal places.
 
 ## Usage
 

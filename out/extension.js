@@ -15,26 +15,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activate = activate;
-exports.deactivate = deactivate;
+exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
@@ -104,10 +93,12 @@ async function activate(context) {
                             message.lat = latMin + Math.random() * (latMax - latMin);
                             message.lon = lonMin + Math.random() * (lonMax - lonMin);
                         }
+                        message.lat = parseFloat((message.lat).toFixed(5));
+                        message.lon = parseFloat((message.lon).toFixed(5));
                     }
                     // Add value parameters
                     settings.values.forEach((param) => {
-                        message[param.name] = param.min + Math.random() * (param.max - param.min);
+                        message[param.name] = generateRandomValue(param.min, param.max, param.type || 'float');
                     });
                     // Send message
                     const batch = await producer.createBatch();
@@ -116,11 +107,11 @@ async function activate(context) {
                     // Increment total message counter
                     totalMessagesSent++;
                     // Log the sent message
-                    console.log(`Sent message for device ${device} (Total: ${totalMessagesSent} of ${settings.maxMessages})`);
+                    console.log(`Sent message for device ${device} (Total: ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices})`);
                     // Update the progress
                     progress.report({
                         increment: Math.floor((totalMessagesSent / settings.maxMessages) * 100),
-                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages}`,
+                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices}`,
                     });
                     // Delay between messages
                     await new Promise((resolve) => setTimeout(resolve, settings.delay * 1000));
@@ -145,5 +136,12 @@ async function activate(context) {
     }));
     vscode.window.showInformationMessage('Extension activated. Process is going...');
 }
+exports.activate = activate;
 function deactivate() { }
+exports.deactivate = deactivate;
+// Helper function to generate a random value based on type
+function generateRandomValue(min, max, type = 'float') {
+    const value = min + Math.random() * (max - min);
+    return type === 'int' ? Math.floor(value) : parseFloat(value.toFixed(5));
+}
 //# sourceMappingURL=extension.js.map
