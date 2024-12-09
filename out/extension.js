@@ -74,32 +74,8 @@ async function activate(context) {
             // Update the progress
             progress.report({ increment: 0, message: 'Starting message generation' });
             for (let i = 0; i < settings.maxMessages; i++) {
-                for (let device = 0; device < settings.nmbOfDevices; device++) {
-                    // Generate message
-                    const message = {
-                        deviceId: device,
-                    };
-                    // Add geocoordinates if applicable
-                    if (settings.geosection?.type !== 'none' && settings.geosection) {
-                        if (settings.geosection.type === 'round') {
-                            const { lat, lon } = settings.geosection.center;
-                            const radius = settings.geosection.bounds?.radius ?? 1;
-                            message.lat = lat + Math.random() * radius - radius / 2;
-                            message.lon = lon + Math.random() * radius - radius / 2;
-                        }
-                        else if (settings.geosection.type === 'square') {
-                            const [latMin, latMax] = settings.geosection.bounds?.lat_range ?? [-90, 90];
-                            const [lonMin, lonMax] = settings.geosection.bounds?.lon_range ?? [-180, 180];
-                            message.lat = latMin + Math.random() * (latMax - latMin);
-                            message.lon = lonMin + Math.random() * (lonMax - lonMin);
-                        }
-                        message.lat = parseFloat((message.lat).toFixed(5));
-                        message.lon = parseFloat((message.lon).toFixed(5));
-                    }
-                    // Add value parameters
-                    settings.values.forEach((param) => {
-                        message[param.name] = generateRandomValue(param.min, param.max, param.type || 'float');
-                    });
+                for (let entity = 1; entity <= settings.entityCount; entity++) { // Formerly nmbOfDevices
+                    const message = generateMessage(entity, settings);
                     // Send message
                     const batch = await producer.createBatch();
                     batch.tryAdd({ body: message });
@@ -107,11 +83,11 @@ async function activate(context) {
                     // Increment total message counter
                     totalMessagesSent++;
                     // Log the sent message
-                    console.log(`Sent message for device ${device} (Total: ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices})`);
+                    console.log(`Sent message for entity ${entity} (Total: ${totalMessagesSent} of ${settings.maxMessages * settings.entityCount})`);
                     // Update the progress
                     progress.report({
                         increment: Math.floor((totalMessagesSent / settings.maxMessages) * 100),
-                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages * settings.nmbOfDevices}`,
+                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages * settings.entityCount}`,
                     });
                     // Delay between messages
                     await new Promise((resolve) => setTimeout(resolve, settings.delay * 1000));
@@ -143,5 +119,36 @@ exports.deactivate = deactivate;
 function generateRandomValue(min, max, type = 'float') {
     const value = min + Math.random() * (max - min);
     return type === 'int' ? Math.floor(value) : parseFloat(value.toFixed(5));
+}
+function generateMessage(entityId, settings) {
+    const idKeyName = settings.idKeyName || 'deviceId'; // Default to 'deviceId' if not defined
+    const message = { [idKeyName]: entityId }; // Use dynamic key for the ID
+    // Add timestamp if enabled
+    if (settings.timestamp?.enabled) {
+        const date = new Date();
+        message.timestamp = date.toISOString();
+    }
+    // Add geocoordinates if applicable
+    if (settings.geosection?.type !== 'none' && settings.geosection) {
+        if (settings.geosection.type === 'round') {
+            const { lat, lon } = settings.geosection.center;
+            const radius = settings.geosection.bounds?.radius ?? 1;
+            message.lat = lat + Math.random() * radius - radius / 2;
+            message.lon = lon + Math.random() * radius - radius / 2;
+        }
+        else if (settings.geosection.type === 'square') {
+            const [latMin, latMax] = settings.geosection.bounds?.lat_range ?? [-90, 90];
+            const [lonMin, lonMax] = settings.geosection.bounds?.lon_range ?? [-180, 180];
+            message.lat = latMin + Math.random() * (latMax - latMin);
+            message.lon = lonMin + Math.random() * (lonMax - lonMin);
+        }
+        message.lat = parseFloat((message.lat).toFixed(5));
+        message.lon = parseFloat((message.lon).toFixed(5));
+    }
+    // Add value parameters
+    settings.values.forEach((param) => {
+        message[param.name] = generateRandomValue(param.min, param.max, param.type || 'float');
+    });
+    return message;
 }
 //# sourceMappingURL=extension.js.map

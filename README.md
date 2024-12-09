@@ -6,12 +6,13 @@ This VS Code extension allows you to generate and send random messages to an Azu
 ## Features
 
 - **Generate Random Messages**: Generates random messages for a configurable number of devices.
+- **Azure Event Hub Integration**: Send the generated messages to Azure Event Hub.
 - **Customizable Geosection**: Supports both "square" and "round" geosection types for location data (optional).
 - **Message Parameters**: Define different parameters with min and max values to simulate data for each message.
-- **Azure Event Hub Integration**: Send the generated messages to Azure Event Hub.
 - **Progress Reporting**: Visual progress is displayed in VS Code during message sending, with a notification when completed.
 - **Environment Variable Support**: If the connection string is not defined in the `settings.yml` file, the extension will use the `AZURE_EVENTHUB_CONNECTION_STRING` environment variable.
 - **Precision Handling**: All float values, including geocoordinates, are explicitly rounded to 5 decimal places for consistency.
+- **Timestamp Parameter**: Optionally include a timestamp (UTC).
 
 ## Installation
 
@@ -27,9 +28,16 @@ The extension expects a `settings.yml` file in the workspace folder. Below is an
 ### Example `settings.yml`
 
 ```yaml
-nmbOfDevices: 1  # Number of devices (default 1)
-delay: 1         # Delay in seconds between messages (default 1)
+azureEventHub:
+  connectionString: "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
+
+idKeyName: "deviceId"  # Optional. Defaults to 'deviceId' if not provided.
+entityCount: 5  # The number of entities to simulate (formerly nmbOfDevices)
+delay: 1         # Delay in seconds between messages
 maxMessages: 100 # Maximum number of messages to send (default 100)
+
+timestamp:
+  enabled: true  # Enable or disable timestamp in messages (default: false)
 
 geosection:
   type: square   # Geosection type: 'square' or 'round'
@@ -40,9 +48,6 @@ geosection:
     radius: 1    # Radius in km (only for 'round' type)
     lat_range: [-90.0, 90.0]  # Latitude range for 'square' type
     lon_range: [-180.0, 180.0]  # Longitude range for 'square' type
-
-azureEventHub:
-  connectionString: "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
 
 values:
   - name: "Temperature"
@@ -56,8 +61,9 @@ values:
 ```
 
 ### Parameters Explained:
-- **`nmbOfDevices`**: Number of devices for which messages will be generated (default: 1).
-- **`delay`**: Delay in seconds between sending messages (default: 1).
+- **`idKeyName`** (optional): Specifies the key name for the entity identifier (default is deviceId).
+- **`entityCount`**: Number of devices for which messages will be generated.
+- **`delay`**: Delay in seconds between sending messages.
 - **`maxMessages`**: Total number of messages to be generated and sent (default: 100).
 - **`geosection`**: Geographical range of coordinates to be included in the message (optional).
   - **`type`**: Set as `square` or `round`. Defines the type of geospatial area.
@@ -68,6 +74,8 @@ values:
   - `name`: Parameter name.
   - `min` and `max`: Range of random values.
   - `type`: Specifies `int` or `float` (default: `float`). All float values are explicitly rounded to 5 decimal places.
+- **`timestamp`**: Optionally include the timestamp when the message is generated.
+  - **`enabled`**: Set to true to include the timestamp in the message (default: false).
 
 ## Usage
 

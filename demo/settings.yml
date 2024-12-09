@@ -1,6 +1,13 @@
-nmbOfDevices: 2  # Number of devices
+azureEventHub:
+  connectionString: "" # "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
+
+entityCount: 5  # Formerly nmbOfDevices
+idKeyName: "device_Id"
+maxMessages: 5 # Maximum number of messages per entity
 delay: 1         # Delay in seconds
-maxMessages: 16 # Maximum number of messages
+
+timestamp:
+  enabled: true
 
 geosection:
   type: square   # Geosection type: 'square', 'round', or 'none'
@@ -11,9 +18,6 @@ geosection:
     radius: 1      # Radius, km (only for 'round' type)
     lat_range: [48.1850, 48.1890]  # Latitude range (only for 'square' type)
     lon_range: [16.40000, 16.407]  # Longitude range (only for 'square' type)
-
-azureEventHub:
-  connectionString: "" # "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
 
 values:
   - name: "Temperature"
