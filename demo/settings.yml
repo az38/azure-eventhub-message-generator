@@ -3,8 +3,10 @@ azureEventHub:
 
 entityCount: 5  # Formerly nmbOfDevices
 idKeyName: "device_Id"
-maxMessages: 5 # Maximum number of messages per entity
+startId: 1
+maxMessages: 35 # Maximum number of messages per entity
 delay: 1         # Delay in seconds
+concurrencyLimit: 10 # Max concurrency limit
 
 timestamp:
   enabled: true

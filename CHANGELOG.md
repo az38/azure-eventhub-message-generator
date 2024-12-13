@@ -2,7 +2,18 @@
 
 All notable changes to the "azure-eventhub-message-generator" extension will be documented in this file.
 
-## [1.0.4] - 2024-12-??
+## [1.0.5] - 2024-12-14
+### Features:
+- **Parallel Execution Enhancement:**  
+  Introduced parallel execution for message sending by using an async task queue with concurrency control, improving overall performance.
+- **`concurrencyLimit` Parameter:**  
+  Added the `concurrencyLimit` parameter to `settings.yml`, allowing users to define the maximum number of concurrent tasks for sending messages
+
+### Added
+- Introduced a new `startId` parameter in the `settings.yml` file to specify the starting ID for entity loops. Defaults to `1` if not provided.
+
+
+## [1.0.4] - 2024-12-09
 ### Added
 - **Timestamp Parameter**: 
   - Introduced a new `timestamp` parameter in the `settings.yml` configuration. 

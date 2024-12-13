@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { parse } from 'yaml';
 import { EventHubProducerClient } from '@azure/event-hubs';
 
@@ -8,6 +9,7 @@ interface Settings {
     azureEventHub: { connectionString: string };
     entityCount: number;
     idKeyName?: string; // New optional property for the ID key name
+    startId?: number; // New parameter for starting ID, defaults to 1
     delay: number;
     maxMessages: number;
     timestamp?: {
@@ -23,6 +25,7 @@ interface Settings {
         };
     };
     values: { name: string; min: number; max: number; type?: 'int' | 'float' }[];
+    concurrencyLimit?: number;
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -63,46 +66,63 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
     }
 
+    const async = require('async');
+
     const sendMessages = async () => {
         const producer = new EventHubProducerClient(connectionString);
-
+    
         let totalMessagesSent = 0;
+        const totalTasks = settings.maxMessages * settings.entityCount;
+        const startId = settings.startId || 1; // Default to 1 if not defined in the settings
+        const availableCpuCores = os.cpus().length; // Get number of CPU cores
+    
+        // Get concurrencyLimit from settings.yml, fallback to CPU cores, or use a sensible default (e.g., 1)
+        const concurrencyLimit = settings.concurrencyLimit || Math.max(1, availableCpuCores);
+        
         const progressOptions: vscode.ProgressOptions = {
             location: vscode.ProgressLocation.Notification,
             title: 'Sending messages to Azure Event Hub...',
             cancellable: false,
         };
-
-        vscode.window.withProgress(progressOptions, async (progress) => {
-            // Update the progress
-            progress.report({ increment: 0, message: 'Starting message generation' });
-
-            for (let i = 0; i < settings.maxMessages; i++) {
-                for (let entity = 1; entity <= settings.entityCount; entity++) { // Formerly nmbOfDevices
-                    const message = generateMessage(entity, settings);
     
-                    // Send message
+        vscode.window.withProgress(progressOptions, async (progress) => {
+            progress.report({ increment: 0, message: 'Starting message generation' });
+    
+            // Generate all tasks in a flat array, starting from startId
+            const tasks = Array.from({ length: totalTasks }, (_, index) => {
+                const entityId = startId + Math.floor(index / settings.entityCount); // Increment entityId based on startId
+                return generateMessage(entityId, settings);
+            });
+    
+            const queue = async.queue(async (message: any, callback: any) => {
+                try {
                     const batch = await producer.createBatch();
                     batch.tryAdd({ body: message });
                     await producer.sendBatch(batch);
-
-                    // Increment total message counter
+    
                     totalMessagesSent++;
-
-                    // Log the sent message
-                    console.log(`Sent message for entity ${entity} (Total: ${totalMessagesSent} of ${settings.maxMessages * settings.entityCount})`);
-
-                    // Update the progress
+                    const progressPercentage = Math.floor((totalMessagesSent / totalTasks) * 100);
+    
+                    // Update progress
                     progress.report({
-                        increment: Math.floor((totalMessagesSent / settings.maxMessages) * 100),
-                        message: `Sending message ${totalMessagesSent} of ${settings.maxMessages * settings.entityCount}`,
+                        increment: progressPercentage,
+                        message: `Sent message ${totalMessagesSent} of ${totalTasks}`,
                     });
-
-                    // Delay between messages
-                    await new Promise((resolve) => setTimeout(resolve, settings.delay * 1000));
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                } finally {
+                    callback();
                 }
-            }
-
+            }, concurrencyLimit);
+    
+            // Push all tasks to the queue
+            tasks.forEach((message) => queue.push(message));
+    
+            // Wait for the queue to drain
+            await new Promise<void>((resolve) => {
+                queue.drain(() => resolve());
+            });
+    
             await producer.close();
             vscode.window.showInformationMessage('Messages successfully sent to Azure Event Hub!');
         });

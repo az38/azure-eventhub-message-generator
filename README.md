@@ -13,6 +13,8 @@ This VS Code extension allows you to generate and send random messages to an Azu
 - **Environment Variable Support**: If the connection string is not defined in the `settings.yml` file, the extension will use the `AZURE_EVENTHUB_CONNECTION_STRING` environment variable.
 - **Precision Handling**: All float values, including geocoordinates, are explicitly rounded to 5 decimal places for consistency.
 - **Timestamp Parameter**: Optionally include a timestamp (UTC).
+- **Parallel Execution**: Improved message sending through parallel execution with concurrency control, optimizing performance.
+- **Dynamic Concurrency Limit**: The `concurrencyLimit` parameter in `settings.yml` allows users to set a custom concurrency limit. By default, the system dynamically adapts based on available CPU cores.
 
 ## Installation
 
@@ -31,10 +33,12 @@ The extension expects a `settings.yml` file in the workspace folder. Below is an
 azureEventHub:
   connectionString: "Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=<keyname>;SharedAccessKey=<key>;EntityPath=<hubname>"
 
+startId: 1 # parameter for starting ID, defaults to 1
 idKeyName: "deviceId"  # Optional. Defaults to 'deviceId' if not provided.
 entityCount: 5  # The number of entities to simulate (formerly nmbOfDevices)
 delay: 1         # Delay in seconds between messages
 maxMessages: 100 # Maximum number of messages to send (default 100)
+concurrencyLimit: 10 # Max concurrency limit (optional)
 
 timestamp:
   enabled: true  # Enable or disable timestamp in messages (default: false)
@@ -65,6 +69,7 @@ values:
 - **`entityCount`**: Number of devices for which messages will be generated.
 - **`delay`**: Delay in seconds between sending messages.
 - **`maxMessages`**: Total number of messages to be generated and sent (default: 100).
+- **`concurrencyLimit`**: Maximum number of concurrent tasks when sending messages. This value can be set in settings.yml and will optimize performance based on system resources. If not specified, the system adapts to the number of CPU cores available.
 - **`geosection`**: Geographical range of coordinates to be included in the message (optional).
   - **`type`**: Set as `square` or `round`. Defines the type of geospatial area.
   - **`center`**: Latitude and longitude of the center for round geosections.
